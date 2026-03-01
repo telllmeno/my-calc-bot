@@ -10,7 +10,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 A, B, C, D, E, F, G = range(7)
 
 # Токен будем брать из переменной окружения (это безопасно)
-TOKEN = '8724239028:AAETwHNcID8HKXuSzb0TRBuBe92TdB3PJn0'
+TOKEN = '8724239028:AAETwHNclD8HKXuSzb0TRBuBe92TdB3PJn0'
 
 async def start_calculate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Введите количество часов:")
