@@ -1,76 +1,98 @@
 import logging
-import os
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, ContextTypes
+from telegram.ext import (
+    Application, CommandHandler, MessageHandler, filters,
+    ConversationHandler, ContextTypes
+)
 
-# Включаем логирование
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Состояния диалога
-A, B, C, D, E, F, G = range(7)
+COMPANY, A_OLD, B_OLD, C_OLD, D_OLD, E_OLD, F_OLD, G_OLD, B_NEW, C_NEW, D_NEW, E_NEW, F_NEW, G_NEW = range(14)
 
-# Токен будем брать из переменной окружения (это безопасно)
-TOKEN = '8724239028:AAETwHNclD8HKXuSzb0TRBuBe92TdB3PJn0'
+TOKEN = '8724239028:AAETwHNcID8HKXuSzb0TRBuBe92TdB3PJn0'  # замените на свой, если нужно
 
 async def start_calculate(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Введите количество часов:")
-    return A
+    """Начало диалога: выбор компании."""
+    await update.message.reply_text(
+        "Выберите компанию:\n"
+        "1. ООО Смена\n"
+        "2. Другие компании\n"
+        "Отправьте 1 или 2"
+    )
+    return COMPANY
 
-async def get_a(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def company_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработка выбора компании."""
+    text = update.message.text.strip()
+    if text == '1':
+        context.user_data['company'] = 'smena'
+        await update.message.reply_text("Введите количество часов:")
+        return A_OLD
+    elif text == '2':
+        context.user_data['company'] = 'other'
+        await update.message.reply_text("Введите количество заказов:")
+        return B_NEW
+    else:
+        await update.message.reply_text("Пожалуйста, введите 1 или 2.")
+        return COMPANY
+
+# --- Старая формула (ООО Смена) ---
+async def get_a_old(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         context.user_data['a'] = float(update.message.text)
         await update.message.reply_text("Введите количество заказов:")
-        return B
+        return B_OLD
     except ValueError:
         await update.message.reply_text("Ошибка! Введите число.")
-        return A
+        return A_OLD
 
-async def get_b(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def get_b_old(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         context.user_data['b'] = float(update.message.text)
         await update.message.reply_text("Введите количество размещений:")
-        return C
+        return C_OLD
     except ValueError:
         await update.message.reply_text("Ошибка! Введите число.")
-        return B
+        return B_OLD
 
-async def get_c(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def get_c_old(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         context.user_data['c'] = float(update.message.text)
         await update.message.reply_text("Введите количество размещения Маркета:")
-        return D
+        return D_OLD
     except ValueError:
         await update.message.reply_text("Ошибка! Введите число.")
-        return C
+        return C_OLD
 
-async def get_d(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def get_d_old(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         context.user_data['d'] = float(update.message.text)
         await update.message.reply_text("Введите количество размещения Мороза:")
-        return E
+        return E_OLD
     except ValueError:
         await update.message.reply_text("Ошибка! Введите число.")
-        return D
+        return D_OLD
 
-async def get_e(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def get_e_old(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         context.user_data['e'] = float(update.message.text)
         await update.message.reply_text("Введите количество часов НПО:")
-        return F
+        return F_OLD
     except ValueError:
         await update.message.reply_text("Ошибка! Введите число.")
-        return E
+        return E_OLD
 
-async def get_f(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def get_f_old(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         context.user_data['f'] = float(update.message.text)
         await update.message.reply_text("Введите значение ККС:")
-        return G
+        return G_OLD
     except ValueError:
         await update.message.reply_text("Ошибка! Введите число.")
-        return F
+        return F_OLD
 
-async def get_g(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def get_g_old(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         context.user_data['g'] = float(update.message.text)
         a = context.user_data['a']
@@ -88,13 +110,83 @@ async def get_g(update: Update, context: ContextTypes.DEFAULT_TYPE):
         freeze = e * 1.26
         npo = f * 194
         kks = orders * g
-        total = hours + raz + market + freeze + npo + kks
 
-        await update.message.reply_text(f"Результат расчёта: {total:.2f} ₽")
+        total = hours + raz + market + freeze + npo + kks
+        await update.message.reply_text(f"Результат расчёта (ООО Смена): {total:.2f} ₽")
         return ConversationHandler.END
     except ValueError:
         await update.message.reply_text("Ошибка! Введите число.")
-        return G
+        return G_OLD
+
+# --- Новая формула (Другие компании) ---
+async def get_b_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        context.user_data['b'] = float(update.message.text)
+        await update.message.reply_text("Введите количество размещений:")
+        return C_NEW
+    except ValueError:
+        await update.message.reply_text("Ошибка! Введите число.")
+        return B_NEW
+
+async def get_c_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        context.user_data['c'] = float(update.message.text)
+        await update.message.reply_text("Введите количество размещения Маркета:")
+        return D_NEW
+    except ValueError:
+        await update.message.reply_text("Ошибка! Введите число.")
+        return C_NEW
+
+async def get_d_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        context.user_data['d'] = float(update.message.text)
+        await update.message.reply_text("Введите количество размещения Мороза:")
+        return E_NEW
+    except ValueError:
+        await update.message.reply_text("Ошибка! Введите число.")
+        return D_NEW
+
+async def get_e_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        context.user_data['e'] = float(update.message.text)
+        await update.message.reply_text("Введите количество часов НПО:")
+        return F_NEW
+    except ValueError:
+        await update.message.reply_text("Ошибка! Введите число.")
+        return E_NEW
+
+async def get_f_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        context.user_data['f'] = float(update.message.text)
+        await update.message.reply_text("Введите значение ККС:")
+        return G_NEW
+    except ValueError:
+        await update.message.reply_text("Ошибка! Введите число.")
+        return F_NEW
+
+async def get_g_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        context.user_data['g'] = float(update.message.text)
+        b = context.user_data['b']
+        c = context.user_data['c']
+        d = context.user_data['d']
+        e = context.user_data['e']
+        f = context.user_data['f']
+        g = context.user_data['g']
+
+        orders = b * 2.96
+        raz = c * 2.17
+        market = d * 2.1
+        freeze = e * 2.52
+        npo = f * 388
+        kks = orders * g
+
+        total = raz + market + freeze + npo + kks
+        await update.message.reply_text(f"Результат расчёта (Другие компании): {total:.2f} ₽")
+        return ConversationHandler.END
+    except ValueError:
+        await update.message.reply_text("Ошибка! Введите число.")
+        return G_NEW
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Диалог отменён.")
@@ -109,13 +201,20 @@ def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('calculate', start_calculate)],
         states={
-            A: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_a)],
-            B: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_b)],
-            C: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_c)],
-            D: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_d)],
-            E: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_e)],
-            F: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_f)],
-            G: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_g)],
+            COMPANY: [MessageHandler(filters.TEXT & ~filters.COMMAND, company_choice)],
+            A_OLD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_a_old)],
+            B_OLD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_b_old)],
+            C_OLD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_c_old)],
+            D_OLD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_d_old)],
+            E_OLD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_e_old)],
+            F_OLD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_f_old)],
+            G_OLD: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_g_old)],
+            B_NEW: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_b_new)],
+            C_NEW: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_c_new)],
+            D_NEW: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_d_new)],
+            E_NEW: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_e_new)],
+            F_NEW: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_f_new)],
+            G_NEW: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_g_new)],
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
