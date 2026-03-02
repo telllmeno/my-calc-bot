@@ -10,7 +10,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 # Состояния диалога
 COMPANY, A_OLD, B_OLD, C_OLD, D_OLD, E_OLD, F_OLD, G_OLD, B_NEW, C_NEW, D_NEW, E_NEW, F_NEW, G_NEW = range(14)
 
-TOKEN = '8724239028:AAETwHNcID8HKXuSzb0TRBuBe92TdB3PJn0'  # замените на свой, если нужно
+TOKEN = '8724239028:AAETwHNclD8HKXuSzb0TRBuBe92TdB3PJn0'  # замените на свой, если нужно
 
 async def start_calculate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Начало диалога: выбор компании."""
